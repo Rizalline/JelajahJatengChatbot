@@ -15,29 +15,43 @@ class NLPEngine:
     def detect_intent(self, text):
         text = text.lower().strip()
         
-        # 1. Deteksi Sapaan (Halo)
+        if re.search(r"\b(reset|ulang|kembali|awal|home|mulai lagi)\b", text): 
+            return "RESET"
+
         if re.search(r"\b(halo|hai|hey|pagi|siang|sore|malam|assalamualaikum)\b", text): 
             return "GREETING"
 
-        # 2. Reset / Ulangi
-        if re.search(r"\b(reset|ulang|kembali|awal|home|mulai lagi)\b", text): 
-            return "RESET"
+        if re.search(r"\b(siapa kamu|kamu siapa|namamu|apa kabar|kabar|terima kasih|makasih|thanks|pencipta|dibuat oleh|bisa apa|fungsi bot)\b", text):
+            return "GENERAL_QA"
+            
+        if re.search(r"\b(berapa lama|berapa jam|durasi|jarak|berapa km|lewat mana|estimasi|perjalanan)\b", text) or (re.search(r"\bdari\b", text) and re.search(r"\bke\b", text)):
+            return "ASK_TRAVEL_ESTIMATION"
         
-        # 3. Deteksi Info Kota/Kabupaten (Menggunakan extract_destinations yang baru)
+        # ── FITUR BARU: DETEKSI INTENT KULINER, TRANSPORT, BUDGET, TIMING ──
+        if re.search(r"\b(kuliner|makan|oleh-oleh|khas|restoran|warung|jajanan|lumpia|mie ongklok)\b", text):
+            return "ASK_CULINARY"
+            
+        if re.search(r"\b(transport|transportasi|rute|naik apa|akses|stasiun|bandara|terminal|bus|jalan|gojek|grab|mobil|motor)\b", text):
+            return "ASK_TRANSPORT"
+            
+        if re.search(r"\b(budget|biaya|harga|tiket|gratis|bayar|dana|ongkos|rupiah|murah|mahal)\b", text):
+            return "ASK_BUDGET"
+            
+        if re.search(r"\b(waktu terbaik|bulan apa|jam berapa|kapan|cuaca|musim|kapan pas|jam berkunjung)\b", text):
+            return "ASK_TIMING"
+        
+        # Deteksi info kota & spot tetap berada di bawah chitchat & spesifik info
         dest_keys = self.extract_destinations(text)
-        if dest_keys: # Jika list tidak kosong
+        if dest_keys: 
             return "ASK_CITY_INFO"
 
-        # 4. Deteksi Spot Spesifik 
         spot_name, prov_key = self.extract_spot(text)
         if spot_name: 
             return "ASK_SPOT_DETAIL"
             
-        # 5. Deteksi Kategori Alam 
         if re.search(r"\b(alam|gunung|pantai|air terjun|curug|danau|telaga|hutan|bukit)\b", text): 
             return "ASK_NATURE"
             
-        # 6. Deteksi Rekomendasi Umum / Terbaik
         if re.search(r"\b(rekomendasi|terbaik|bagus|wisata apa aja|semua wisata|daftar wisata|jateng)\b", text): 
             return "ASK_BEST_RECOMMENDATION"
         
