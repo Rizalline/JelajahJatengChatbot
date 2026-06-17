@@ -198,10 +198,11 @@ class TravelGuideFSM:
                 ("pantura_barat", "kedu"): ("3.5 - 4.5 Jam", "Via Tol Trans Jawa (Keluar di Gerbang Tol Bawen), lalu lanjut menyusuri jalur utama Ambarawa - Magelang."),
                 ("pantura_barat", "pusat"): ("2 - 2.5 Jam", "Full via Tol Trans Jawa dari arah barat langsung lurus menuju Exit Tol Krapyak/Jatingaleh Semarang."),
                 ("pantura_barat", "soloraya"): ("3 - 3.5 Jam", "Full via Tol Trans Jawa langsung bablas ke arah timur menuju Exit Tol Colomadu/Solo."),
-                ("banyumasan", "kedu"): ("2.5 - 3.5 Jam", "Via jalur darat tengah pegunungan melewati Purbalingga - Banjarnegara - Wonosobo (jalur tengah)."),
-                ("pusat", "kedu"): ("1.5 - 2 Jam", "Via jalur utama Semarang - Yogyakarta atau bisa memanfaatkan Tol Solo-Semarang lalu keluar di Bawen."),
+                ("banyumasan", "kedu"): ("2.5 - 3.5 Jam", "Via jalur darat tengah pegunungan melewati Purbalingga - Banjarnegara - Wonosobo."),
+                # ── UPDATE BARIS INI ──
+                ("pusat", "kedu"): ("2 - 3 Jam", "Jika ke Magelang, lewat Jalur Utama Semarang-Jogja via Bawen. Jika ke Wonosobo/Temanggung, ambil rute Bawen -> Ambarawa -> Secang -> Temanggung -> Wonosobo."),
                 ("soloraya", "kedu"): ("1.5 - 2.5 Jam", "Bisa lewat jalur utama Solo - Jogja (Klaten) atau jalur alternatif Selo (Boyolali) di celah Gunung Merapi-Merbabu."),
-                ("pantura_timur", "kedu"): ("3.5 - 4.5 Jam", "Lewat jalur Pantura ke arah Semarang, lalu lanjut via Tol Semarang dan keluar di Bawen menuju Magelang.")
+                ("pantura_timur", "kedu"): ("3.5 - 4.5 Jam", "Lewat jalur Pantura ke arah Semarang, lalu lanjut via Tol Semarang dan keluar di Bawen.")
             }
 
             # Cek rute bolak-balik di matrix
