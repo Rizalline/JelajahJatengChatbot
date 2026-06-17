@@ -21,10 +21,12 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = [{"role": "assistant", "content": "Halo! Mau cari rekomendasi liburan ke mana hari ini?"}]
 if 'show_chat' not in st.session_state:
     st.session_state.show_chat = False 
+if 'show_grid' not in st.session_state:  # FITUR BARU: State untuk sembunyikan/tampilkan grid
+    st.session_state.show_grid = True
 if 'selected_prov' not in st.session_state:
     st.session_state.selected_prov = None
 if 'page' not in st.session_state:
-    st.session_state.page = "Destinasi" # State untuk halaman aktif
+    st.session_state.page = "Destinasi" 
 
 nlp = NLPEngine()
 nlp_data = nlp.destinations
@@ -54,14 +56,12 @@ st.markdown("""
 
 * { font-family: 'Inter', sans-serif; }
 
-/* Reset Padding Streamlit */
 [data-testid="stAppViewContainer"] > .main > .block-container {
     padding-top: 2rem !important; padding-left: 0rem !important; padding-right: 0rem !important;
     max-width: 100% !important;
 }
 [data-testid="collapsedControl"], header, #MainMenu { display: none !important; }
 
-/* ── HERO SECTION ── */
 .hero {
     background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1553603227-2358aabe8eb8?auto=format&fit=crop&w=1920&q=80') center/cover;
     padding: 70px 20px 80px 20px;
@@ -70,13 +70,11 @@ st.markdown("""
 .hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 15px; letter-spacing: -0.5px; line-height: 1.2; }
 .hero p { font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #E2E8F0; }
 
-/* ── CONTENT AREA ── */
 .section-wrapper { max-width: 1200px; margin: 0 auto; padding: 40px 40px; }
 .section-title { margin-bottom: 30px; }
 .section-title h2 { margin: 0; font-size: 26px; color: var(--text-main); font-weight: 800; }
 .section-title p { margin: 8px 0 0 0; color: var(--text-muted); font-size: 15px; }
 
-/* Card Style */
 .prov-card {
     background: white; border: 1px solid var(--border-color); border-radius: 16px; 
     padding: 24px; height: 160px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
@@ -87,7 +85,6 @@ st.markdown("""
 .prov-ttl { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;}
 .prov-exc { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-/* ── FLOATING CHAT WIDGET (JENDELA CHAT) ── */
 div[data-testid="stVerticalBlock"]:has(.chat-widget-marker):not(:has(div[data-testid="stVerticalBlock"]:has(.chat-widget-marker))) {
     position: fixed !important; 
     top: 90px !important; 
@@ -106,7 +103,6 @@ div[data-testid="stVerticalBlock"]:has(.chat-widget-marker):not(:has(div[data-te
 .bot-bubble { background: #F3F4F6; color: var(--text-main); padding: 12px 16px; border-radius: 0 16px 16px 16px; font-size: 14px; max-width: 85%; align-self: flex-start; margin-bottom: 12px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
 .user-bubble { background: var(--primary); color: white; padding: 12px 16px; border-radius: 16px 0 16px 16px; font-size: 14px; max-width: 85%; align-self: flex-end; margin-left: auto; margin-bottom: 12px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,150,108,0.2);}
 
-/* ── TOMBOL TANYA BOT (PRIMARY BUTTON STREAMLIT) ── */
 button[kind="primary"] {
     background-color: var(--primary) !important; 
     color: white !important;
@@ -125,7 +121,6 @@ button[kind="primary"]:hover {
 # ═══════════════════════════════════════════════════════════════
 st.markdown('<div class="section-wrapper" style="padding-top: 0px; padding-bottom: 0px;">', unsafe_allow_html=True)
 
-# Membagi menjadi 5 kolom agar muat untuk tombol Chatbot di sisi paling kanan
 col_logo, col_nav1, col_nav2, col_nav3, col_chat = st.columns([2.5, 1, 1, 1, 1.2])
 
 with col_logo:
@@ -143,7 +138,6 @@ with col_nav3:
         st.session_state.page = "Tentang"
         st.rerun()
 with col_chat:
-    # Menggunakan type="primary" bawaan Streamlit agar style spesifik bekerja tanpa merusak layout kolom
     fab_label = "✖ Tutup Bot" if st.session_state.show_chat else "💬 Tanya Bot"
     if st.button(fab_label, key="toggle_chat_widget", use_container_width=True, type="primary"):
         st.session_state.show_chat = not st.session_state.show_chat
@@ -155,9 +149,7 @@ st.markdown("<hr style='margin: 0;'>", unsafe_allow_html=True)
 # ═══════════════════════════════════════════════════════════════
 # 5. KONTEN HALAMAN (ROUTING)
 # ═══════════════════════════════════════════════════════════════
-
 if st.session_state.page == "Destinasi":
-    # Skenario A: Detail Wisata
     if st.session_state.selected_prov:
         prov_key = st.session_state.selected_prov
         prov_data = nlp_data[prov_key]
@@ -192,7 +184,7 @@ if st.session_state.page == "Destinasi":
                 st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # Skenario B: Grid Destinasi
+    # ── SKENARIO B: GRID DESTINASI (DENGAN TOGGLE BURGER-STYLE) ──
     else:
         st.markdown("""
         <div class="hero">
@@ -202,30 +194,44 @@ if st.session_state.page == "Destinasi":
         """, unsafe_allow_html=True)
         
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-        col_title, col_search = st.columns([1, 1])
+        
+        # Pembagian kolom baru untuk menyematkan tombol Toggle
+        col_title, col_burger, col_search = st.columns([1.5, 1, 1.5])
         with col_title:
             st.markdown('<div class="section-title"><h2>🏝️ Destinasi Pilihan</h2></div>', unsafe_allow_html=True)
+        
+        with col_burger:  # FITUR BARU: Tombol Toggle Sembunyikan/Tampilkan ala Burger
+            grid_label = "🙈 Sembunyikan Wisata" if st.session_state.show_grid else "👁️ Tampilkan Wisata"
+            if st.button(grid_label, use_container_width=True):
+                st.session_state.show_grid = not st.session_state.show_grid
+                st.rerun()
+                
         with col_search:
             search_input = st.text_input("Pencarian", placeholder="Cari kota (cth: Semarang, Wonosobo)...", label_visibility="collapsed")
         
-        filtered_provs = [(k, v) for k, v in nlp_data.items() if not search_input or search_input.lower() in v["name"].lower()]
-                
-        if not filtered_provs:
-            st.warning("Destinasi yang Anda cari tidak ditemukan.")
+        # Logika Kondisional Grid
+        if st.session_state.show_grid:
+            filtered_provs = [(k, v) for k, v in nlp_data.items() if not search_input or search_input.lower() in v["name"].lower()]
+                    
+            if not filtered_provs:
+                st.warning("Destinasi yang Anda cari tidak ditemukan.")
+            else:
+                cols = st.columns(3)
+                for i, (k, v) in enumerate(filtered_provs):
+                    col = cols[i % 3]
+                    with col:
+                        st.markdown(f"""
+                        <div class="prov-card">
+                            <div class="prov-ttl">{v['emoji']} {v['name']}</div>
+                            <p class="prov-exc">{v.get('kelebihan', '')}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        if st.button(f"Lihat Detail", key=f"btn_{k}", use_container_width=True):
+                            st.session_state.selected_prov = k
+                            st.rerun()
         else:
-            cols = st.columns(3)
-            for i, (k, v) in enumerate(filtered_provs):
-                col = cols[i % 3]
-                with col:
-                    st.markdown(f"""
-                    <div class="prov-card">
-                        <div class="prov-ttl">{v['emoji']} {v['name']}</div>
-                        <p class="prov-exc">{v.get('kelebihan', '')}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    if st.button(f"Lihat Detail", key=f"btn_{k}", use_container_width=True):
-                        st.session_state.selected_prov = k
-                        st.rerun()
+            st.info("💡 Kotak daerah wisata sedang disembunyikan. Klik tombol '👁️ Tampilkan Wisata' di atas untuk melihat kembali.")
+            
         st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state.page == "Panduan":
@@ -257,15 +263,11 @@ elif st.session_state.page == "Tentang":
     """)
     st.markdown('</div>', unsafe_allow_html=True)
 
-
 # ═══════════════════════════════════════════════════════════════
 # 6. LOGIKA FLOATING CHAT WIDGET
 # ═══════════════════════════════════════════════════════════════
-
-# Jendela Chatbot
 if st.session_state.show_chat:
     with st.container():
-        # Menggunakan <span> agar tidak mengambil tinggi/space kosong di UI
         st.markdown('<span class="chat-widget-marker"></span>', unsafe_allow_html=True)
         st.markdown("""
         <div class="chat-header">
