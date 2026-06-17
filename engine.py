@@ -13,7 +13,7 @@ class NLPEngine:
         text = text.lower().strip()
         
         # ── PRIORITY 1: Chat Manajemen & Greeting ──
-        if re.search(r"\b(reset|ulang|kembali|awal|home|mulai lagi)\b", text): 
+        if re.search(r"\b(reset|clear|ulang|kembali|awal|home|mulai lagi)\b", text): 
             return "RESET"
 
         if re.search(r"\b(halo|hai|hey|pagi|siang|sore|malam|assalamualaikum)\b", text): 
