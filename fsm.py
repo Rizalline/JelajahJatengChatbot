@@ -34,7 +34,6 @@ class TravelGuideFSM:
             self.suggested_actions = ["Rekomendasi Wisata Terbaik", "Wisata Alam", "Wisata Semarang"]
             return
 
-        # ── FITUR BARU: Menjawab Pertanyaan Umum Manusia ──
         if intent == "GENERAL_QA":
             low_input = user_input.lower()
             if "siapa" in low_input or "namamu" in low_input:
@@ -69,7 +68,6 @@ class TravelGuideFSM:
 
         if intent == "ASK_CITY_INFO" and dest_keys:
             self.response = "" 
-            
             for dest_key in dest_keys:
                 data = self.nlp.destinations[dest_key]
                 self.response += f"📍 Kamu memilih **{data['name']}** {data['emoji']}\n\n"
@@ -90,7 +88,6 @@ class TravelGuideFSM:
                         self.response += f"- **{s['name']}**: {s['desc']}\n"
                         
                 self.response += "\n---\n\n" 
-                
                 for s_key, s_val in data["spots"].items():
                     self.suggested_actions.append(s_val["name"])
                     
@@ -133,7 +130,6 @@ class TravelGuideFSM:
             self.suggested_actions = ["Rekomendasi Alam", "Wisata Jateng Lainnya"]
             return
 
-        # 1. HANDLING INTENT KULINER
         if intent == "ASK_CULINARY":
             if dest_keys:
                 self.response = "🍽️ **Rekomendasi Kuliner & Oleh-Oleh Khas**\n\n"
@@ -146,7 +142,6 @@ class TravelGuideFSM:
                 self.suggested_actions = ["Kuliner Semarang", "Kuliner Wonosobo", "Kuliner Magelang"]
             return
 
-        # 2. HANDLING INTENT TRANSPORTASI
         if intent == "ASK_TRANSPORT":
             if dest_keys:
                 self.response = "🚌 **Panduan Transportasi & Rute Akses**\n\n"
@@ -160,26 +155,23 @@ class TravelGuideFSM:
             return
         
         if intent == "ASK_TRAVEL_ESTIMATION":
-            # 1. Deteksi kota apa saja yang ada di dalam text input
-            extracted_cities = self.nlp.extract_destinations(text) # Mengambil list kota yang terdeteksi
+            # BUG FIX: Mengubah 'text' menjadi 'user_input' agar tidak NameError
+            extracted_cities = self.nlp.extract_destinations(user_input) 
             
             if len(extracted_cities) < 2:
                 self.response = "🚗 Kamu ingin tahu estimasi perjalanan ke mana nih? Coba ketik lengkap dengan format: *'Dari Tegal ke Magelang berapa lama?'*"
                 return
             
-            # Tentukan asal dan tujuan berdasarkan urutan kata "dari" dan "ke"
-            # Default asumsi: indeks 0 adalah asal, indeks 1 adalah tujuan
             origin_key = extracted_cities[0]
             dest_key = extracted_cities[1]
             
-            # Cek urutan teks asli untuk memastikan akurasi asal-tujuan
-            if text.find(dest_key) < text.find(origin_key):
+            # BUG FIX: Mengubah 'text' menjadi 'user_input'
+            if user_input.find(dest_key) < user_input.find(origin_key):
                 origin_key, dest_key = dest_key, origin_key
 
             origin_name = self.nlp.destinations[origin_key]["name"]
             dest_name = self.nlp.destinations[dest_key]["name"]
 
-            # 2. Mapping Pembagian Zona 35 Kabupaten/Kota Jawa Tengah
             CITY_ZONES = {
                 "semarang": "pusat", "semarang kab": "pusat", "salatiga": "pusat", "kendal": "pusat",
                 "tegal": "pantura_barat", "tegal kota": "pantura_barat", "brebes": "pantura_barat", "pemalang": "pantura_barat", "pekalongan": "pantura_barat", "pekalongan kota": "pantura_barat", "batang": "pantura_barat",
@@ -192,23 +184,18 @@ class TravelGuideFSM:
             zone_origin = CITY_ZONES.get(origin_key, "unknown")
             zone_dest = CITY_ZONES.get(dest_key, "unknown")
 
-            # 3. Matrix Waktu & Saran Rute Utama Antar-Zona
-            # Format key: (zona_asal, zona_tujuan) -> (Waktu, Saran Jalan)
             ROUTE_MATRIX = {
                 ("pantura_barat", "kedu"): ("3.5 - 4.5 Jam", "Via Tol Trans Jawa (Keluar di Gerbang Tol Bawen), lalu lanjut menyusuri jalur utama Ambarawa - Magelang."),
                 ("pantura_barat", "pusat"): ("2 - 2.5 Jam", "Full via Tol Trans Jawa dari arah barat langsung lurus menuju Exit Tol Krapyak/Jatingaleh Semarang."),
                 ("pantura_barat", "soloraya"): ("3 - 3.5 Jam", "Full via Tol Trans Jawa langsung bablas ke arah timur menuju Exit Tol Colomadu/Solo."),
                 ("banyumasan", "kedu"): ("2.5 - 3.5 Jam", "Via jalur darat tengah pegunungan melewati Purbalingga - Banjarnegara - Wonosobo."),
-                # ── UPDATE BARIS INI ──
                 ("pusat", "kedu"): ("2 - 3 Jam", "Jika ke Magelang, lewat Jalur Utama Semarang-Jogja via Bawen. Jika ke Wonosobo/Temanggung, ambil rute Bawen -> Ambarawa -> Secang -> Temanggung -> Wonosobo."),
                 ("soloraya", "kedu"): ("1.5 - 2.5 Jam", "Bisa lewat jalur utama Solo - Jogja (Klaten) atau jalur alternatif Selo (Boyolali) di celah Gunung Merapi-Merbabu."),
                 ("pantura_timur", "kedu"): ("3.5 - 4.5 Jam", "Lewat jalur Pantura ke arah Semarang, lalu lanjut via Tol Semarang dan keluar di Bawen.")
             }
 
-            # Cek rute bolak-balik di matrix
             route_data = ROUTE_MATRIX.get((zone_origin, zone_dest)) or ROUTE_MATRIX.get((zone_dest, zone_origin))
 
-            # 4. Formulasi Balasan Bot
             if origin_key == dest_key:
                 self.response = f"🚗 **{origin_name}** ke **{dest_name}** kan berada di wilayah yang sama! Estimasinya sekitar 15 - 45 menit tergantung lokasi spesifik objek wisatanya."
             elif route_data:
@@ -221,12 +208,9 @@ class TravelGuideFSM:
                     f"_Tips: Pastikan kondisi rem dan bahan bakar kendaraanmu aman sebelum berangkat ya!_"
                 )
             else:
-                # Fallback jika kombinasi zonanya belum didaftarkan di matrix atas
                 self.response = f"🚗 Perjalanan dari **{origin_name}** ke **{dest_name}** diperkirakan memakan waktu sekitar **3 - 5 Jam** lintas kabupaten menggunakan jalur darat utama Jawa Tengah."
-            
             return
 
-        # 3. HANDLING INTENT BUDGET / BIAYA
         if intent == "ASK_BUDGET":
             if dest_keys:
                 self.response = "💰 **Estimasi Biaya & Tiket Wisata**\n\n"
@@ -239,7 +223,6 @@ class TravelGuideFSM:
                 self.suggested_actions = ["Harga Tiket Magelang", "Budget Semarang"]
             return
 
-        # 4. HANDLING INTENT WAKTU TERBAIK
         if intent == "ASK_TIMING":
             if dest_keys:
                 self.response = "⏰ **Waktu & Kunjungan Terbaik**\n\n"
