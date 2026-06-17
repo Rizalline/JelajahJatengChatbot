@@ -15,45 +15,43 @@ class NLPEngine:
     def detect_intent(self, text):
         text = text.lower().strip()
         
+        # ── PRIORITY 1: Chat Manajemen & Greeting ──
         if re.search(r"\b(reset|ulang|kembali|awal|home|mulai lagi)\b", text): 
             return "RESET"
 
         if re.search(r"\b(halo|hai|hey|pagi|siang|sore|malam|assalamualaikum)\b", text): 
             return "GREETING"
 
-        if re.search(r"\b(siapa kamu|kamu siapa|namamu|apa kabar|kabar|terima kasih|makasih|thanks|pencipta|dibuat oleh|bisa apa|fungsi bot)\b", text):
+        if re.search(r"\b(siapa kamu|kamu siapa|namamu|apa kabar|kabar|terima kasih|makasih|thanks)\b", text):
             return "GENERAL_QA"
             
+        # ── PRIORITY 2: Fitur Spesifik Mandiri (TARUH DI SINI AGAR TIDAK DIBAJAK) ──
         if re.search(r"\b(berapa lama|berapa jam|durasi|jarak|berapa km|lewat mana|estimasi|perjalanan)\b", text) or (re.search(r"\bdari\b", text) and re.search(r"\bke\b", text)):
             return "ASK_TRAVEL_ESTIMATION"
-        
-        # ── FITUR BARU: DETEKSI INTENT KULINER, TRANSPORT, BUDGET, TIMING ──
-        if re.search(r"\b(kuliner|makan|oleh-oleh|khas|restoran|warung|jajanan|lumpia|mie ongklok)\b", text):
+            
+        if re.search(r"\b(kuliner|makan|oleh-oleh|khas|restoran|warung|jajanan)\b", text):
             return "ASK_CULINARY"
             
-        if re.search(r"\b(transport|transportasi|rute|naik apa|akses|stasiun|bandara|terminal|bus|jalan|gojek|grab|mobil|motor)\b", text):
+        if re.search(r"\b(transport|transportasi|rute|naik apa|akses|stasiun|bus|mobil|motor)\b", text):
             return "ASK_TRANSPORT"
             
-        if re.search(r"\b(budget|biaya|harga|tiket|gratis|bayar|dana|ongkos|rupiah|murah|mahal)\b", text):
+        if re.search(r"\b(budget|biaya|harga|tiket|gratis|bayar|dana|ongkos)\b", text):
             return "ASK_BUDGET"
             
-        if re.search(r"\b(waktu terbaik|bulan apa|jam berapa|kapan|cuaca|musim|kapan pas|jam berkunjung)\b", text):
+        if re.search(r"\b(waktu terbaik|bulan apa|jam berapa|kapan|cuaca|musim)\b", text):
             return "ASK_TIMING"
         
-        # Deteksi info kota & spot tetap berada di bawah chitchat & spesifik info
-        dest_keys = self.extract_destinations(text)
-        if dest_keys: 
-            return "ASK_CITY_INFO"
-
+        # ── PRIORITY 3: Info Destinasi Umum (Paling Bawah) ──
         spot_name, prov_key = self.extract_spot(text)
         if spot_name: 
             return "ASK_SPOT_DETAIL"
+
+        dest_keys = self.extract_destinations(text)
+        if dest_keys: 
+            return "ASK_CITY_INFO"
             
-        if re.search(r"\b(alam|gunung|pantai|air terjun|curug|danau|telaga|hutan|bukit)\b", text): 
+        if re.search(r"\b(alam|gunung|pantai|air terjun|curug|danau|wisata)\b", text): 
             return "ASK_NATURE"
-            
-        if re.search(r"\b(rekomendasi|terbaik|bagus|wisata apa aja|semua wisata|daftar wisata|jateng)\b", text): 
-            return "ASK_BEST_RECOMMENDATION"
         
         return "UNKNOWN"
 
